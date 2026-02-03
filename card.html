@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lovelink 💘</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- 1. THE LOVE UI (CSS) --- */
+        body { 
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            background-color: #ffdde1; 
+            font-family: 'Nunito', sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            overflow: hidden; 
+            margin: 0; 
+            position: relative;
+        }
+
+        /* Floating Hearts Background */
+        body::before { content: "❤️"; opacity: 0.1; position: absolute; top: 10%; left: 10%; font-size: 3rem; transform: rotate(-20deg); }
+        body::after { content: "💘"; opacity: 0.1; position: absolute; bottom: 15%; right: 10%; font-size: 4rem; transform: rotate(20deg); }
+
+        /* The Glass Card */
+        .container { 
+            text-align: center; 
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(12px);
+            padding: 30px; 
+            border-radius: 25px; 
+            box-shadow: 0 10px 40px rgba(233, 30, 99, 0.15); 
+            width: 85%; 
+            max-width: 380px; 
+            position: relative; 
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            z-index: 10;
+        }
+
+        h1 { font-family: 'Fredoka One', cursive; color: #ff4757; font-size: 1.8rem; line-height: 1.2; margin-bottom: 10px; }
+        .gif-container { width: 100%; display: flex; justify-content: center; }
+        img { width: 100%; max-width: 280px; height: auto; border-radius: 15px; margin: 10px 0; pointer-events: none; }
+
+        .btn-container { margin-top: 20px; min-height: 60px; display: flex; justify-content: center; gap: 15px; position: relative; }
+        
+        button { padding: 12px 25px; border-radius: 50px; border: none; cursor: pointer; font-family: 'Fredoka One', cursive; font-size: 1.1rem; -webkit-tap-highlight-color: transparent; }
+        
+        #yesBtn { background: linear-gradient(45deg, #2ed573, #7bed9f); color: white; z-index: 20; }
+        #noBtn { background: linear-gradient(45deg, #ff4757, #ff6b81); color: white; position: absolute; z-index: 20; }
+        
+        /* New "Create" Button Style */
+        #createBtn { 
+            margin-top: 20px; 
+            background: linear-gradient(45deg, #a18cd1, #fbc2eb); 
+            color: white; 
+            box-shadow: 0 5px 15px rgba(161, 140, 209, 0.4); 
+            font-size: 1rem;
+            width: 80%;
+        }
+        #createBtn:hover { transform: scale(1.05); }
+
+        /* Footer */
+        .footer { position: fixed; bottom: 15px; width: 100%; text-align: center; font-size: 0.85rem; color: #888; font-weight: bold; z-index: 5; pointer-events: none; }
+        .footer a { color: #ff4757; text-decoration: none; font-weight: 800; pointer-events: auto; }
+        
+        /* Mobile Fix */
+        @media (max-width: 400px) { .container { padding: 20px; width: 90%; } h1 { font-size: 1.5rem; } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="loading"><h3 style="color:#ff4757;">Loading love... ❤️</h3></div>
+
+        <div id="question-screen" style="display:none;">
+            <h1 id="main-text">...</h1>
+            <div class="gif-container">
+                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZnJvN21wbm9tcW94Y2R1bGZ1aXJqZ254OGljNHJ5YnN1aG14ZG5tcyZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/cLS1cfxvGOPVpf9g3y/giphy.gif">
+            </div>
+            <div class="btn-container">
+                <button id="yesBtn">Yes</button>
+                <button id="noBtn">No</button>
+            </div>
+        </div>
+
+        <div id="success-message" style="display:none;">
+            <h1>YAY! 💖</h1>
+            <img src="https://media4.giphy.com/media/Ko5dZRMv9uJFu/giphy.gif">
+            <p style="color:#555; font-weight:bold; margin-top:10px;">See you on the 14th! 🌹</p>
+            
+            <button id="createBtn" onclick="window.location.href='index.html'">Create Your Lovelink 💘</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        Developed By <a href="https://wa.me/233531582937?text=Hello%20Jordan%20Wealth%2C%20I%20Saw%20Your%20Website%20LoveLink" target="_blank">Elmejor</a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        // --- 2. DATA LOADING ---
+        let creatorEmail = "";
+        let creatorName = "";
+        let partnerName = ""; 
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const docId = urlParams.get('id');
+
+        fetch(`get_card.php?id=${docId}`)
+        .then(res => res.json())
+        .then(data => {
+            if(!data.error) {
+                creatorEmail = data.sender_email;
+                creatorName = data.sender_name;
+                partnerName = data.partner_name;
+            }
+            openCard(partnerName || "My Valentine");
+        })
+        .catch(err => {
+            console.error(err);
+            openCard("My Valentine"); 
+        });
+
+        function openCard(name) {
+            document.getElementById('main-text').innerText = `${name}, will you be my Valentine?`;
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('question-screen').style.display = 'block';
+        }
+
+        // --- 3. JAILBREAK BUTTON LOGIC ---
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+
+        const moveButton = () => {
+            // Jailbreak: Move button to body to escape glass container
+            if (noBtn.parentNode !== document.body) {
+                document.body.appendChild(noBtn);
+            }
+
+            const btnWidth = noBtn.offsetWidth;
+            const btnHeight = noBtn.offsetHeight;
+            const maxX = window.innerWidth - btnWidth - 20;
+            const maxY = window.innerHeight - btnHeight - 20;
+
+            const randomX = Math.random() * maxX;
+            const randomY = Math.random() * maxY;
+
+            noBtn.style.position = 'fixed'; 
+            noBtn.style.left = `${Math.max(10, randomX)}px`;
+            noBtn.style.top = `${Math.max(10, randomY)}px`;
+            noBtn.style.zIndex = "9999"; 
+        };
+        
+        noBtn.addEventListener('mouseover', moveButton);
+        noBtn.addEventListener('touchstart', (e) => { 
+            e.preventDefault(); 
+            moveButton(); 
+        });
+
+        // --- 4. YES BUTTON LOGIC ---
+        yesBtn.addEventListener('click', () => {
+            document.getElementById('question-screen').style.display = 'none';
+            document.getElementById('success-message').style.display = 'block';
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+
+            // Clean up No button if it's floating on the body
+            if(noBtn.parentNode === document.body) {
+                noBtn.remove();
+            }
+
+            if(creatorEmail) {
+                fetch('send_email.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: creatorEmail, name: creatorName, partner: partnerName })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === "success") alert(`${creatorName} Is Happy To See You Chose Yes!✅`);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
